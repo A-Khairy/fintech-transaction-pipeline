@@ -1,6 +1,15 @@
 # Real-Time Financial Transaction Pipeline
 
-A resilient, event-driven payment processing pipeline built with **Python**, **Apache Kafka**, and **PostgreSQL**, containerized via **Docker Compose** and developed using **Test-Driven Development (TDD)**.
+## Tech Stack
+
+| Layer | Technologies |
+| :--- | :--- |
+| **Streaming & Messaging** | `Apache Kafka` `Zookeeper` |
+| **Data Ingestion & Orchestration** | `Apache Airflow (LocalExecutor)` |
+| **Storage & Database Engine** | `PostgreSQL 15` (ACID Transactions, Full Outer Joins) |
+| **Language & Frameworks** | `Python 3.12` `Pydantic v2` `Psycopg2` |
+| **Testing & Quality** | `Pytest` `Test-Driven Development (TDD)` |
+| **Infrastructure & DevOps** | `Docker` `Docker Compose` `Git` |
 
 ---
 
