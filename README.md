@@ -1,100 +1,116 @@
 # Real-Time Financial Transaction Pipeline
 
-[![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/)
-[![Kafka](https://img.shields.io/badge/Apache_Kafka-7.5.0-black?logo=apachekafka)](https://kafka.apache.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)](https://www.postgresql.org/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
-[![Testing](https://img.shields.io/badge/Tests-Pytest-yellow?logo=pytest)](https://docs.pytest.org/)
-
-An event-driven transaction ingestion microservice simulating real-time payment processing. Built with Python 3, Apache Kafka, and PostgreSQL, following Test-Driven Development (TDD) best practices.
+A resilient, event-driven payment processing pipeline built with **Python**, **Apache Kafka**, and **PostgreSQL**, containerized via **Docker Compose** and developed using **Test-Driven Development (TDD)**.
 
 ---
 
-## Architecture Overview
-[ Mock Payment Producer ]
-│
-│ (JSON Streams)
-▼
-[ Apache Kafka Topic: payment_events ]
-│
-▼
-[ Transaction Consumer Worker ]
-├── 1. Schema Validation (Pydantic)
-├── 2. Compliance Evaluation Rules
-│        ├── Amount >= 10k ──► FLAGGED_REVIEW
-│        └── Amount < 10k  ──► SETTLED
-└── 3. Idempotent Storage (PostgreSQL)
---------------------
+## Architecture Flow
 
-## Features
+```mermaid
+flowchart LR
+    Producer[Payment Producer\nsimulator] -->|JSON Events| Kafka[(Apache Kafka\ntopic: transactions)]
+    Kafka -->|Consumer Group| Consumer[Transaction Consumer\nWorker]
+    Consumer -->|Pydantic Schema| Validator{Validation\n& Fraud Rules}
+    Validator -->|SETTLED| Postgres[(PostgreSQL\nLedger)]
+    Validator -->|FLAGGED_REVIEW| Postgres
 
-- **Event-Driven Processing:** Decoupled producer-consumer architecture using Apache Kafka and consumer groups.
-- **Strict Schema Enforcement:** Transaction payloads validated via Pydantic (`amount > 0`, ISO timestamps, regulatory caps).
-- **Idempotent Ingestion:** Safe writes into PostgreSQL utilizing `ON CONFLICT (transaction_id) DO NOTHING` to prevent duplicate ledger records.
-- **Test-Driven Development:** Complete test coverage on compliance rules and edge cases via Pytest.
-- **Containerized Infrastructure:** One-command setup for Zookeeper, Kafka, and PostgreSQL using Docker Compose.
+    style Producer fill:#1e293b,stroke:#64748b,color:#fff
+    style Kafka fill:#1a1d24,stroke:#3b82f6,stroke-width:2px,color:#fff
+    style Consumer fill:#1e293b,stroke:#64748b,color:#fff
+    style Validator fill:#0f766e,stroke:#14b8a6,stroke-width:2px,color:#fff
+    style Postgres fill:#1a1d24,stroke:#3b82f6,stroke-width:2px,color:#fff
+```
 
---------------
+---
 
-## Tech Stack
+## Core Technical Features
 
-- **Language:** Python 3.12
-- **Message Broker:** Apache Kafka (Confluent Platform 7.5.0) & Zookeeper
-- **Database:** PostgreSQL 15
-- **Data Validation:** Pydantic v2
-- **Testing:** Pytest
-- **Infrastructure:** Docker & Docker Compose
+* **Event Streaming:** Decoupled producer/consumer architecture utilizing Apache Kafka message brokering with persistent offsets.
+* **Idempotent Storage:** Composite unique constraints (`transaction_id`) with `ON CONFLICT DO NOTHING` to guarantee exactly-once persistence semantics.
+* **Strict Validation:** Pydantic models enforcing ISO-4217 currencies, non-negative amounts, and routing high-risk records ($> \$10,000$) to `FLAGGED_REVIEW`.
+* **Testing:** 100% test coverage using **Pytest** covering schema serialization, risk thresholds, and database ingestion edge cases.
 
------------
+---
 
 ## Getting Started
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (running)
-- Python 3.10+
-- Git
 
 ### 1. Clone & Set Up Virtual Environment
 
 ```bash
-git clone [https://github.com/A-Khairy/fintech-transaction-pipeline.git](https://github.com/A-Khairy/fintech-transaction-pipeline.git)
+git clone https://github.com/A-Khairy/fintech-transaction-pipeline.git
 cd fintech-transaction-pipeline
-
 python -m venv venv
-# On Windows:
-.\venv\Scripts\Activate.ps1
-# On Linux/macOS:
-# source venv/bin/activate
+```
 
+Activate the virtual environment:
+
+* **Windows (PowerShell):**
+  ```powershell
+  .\venv\Scripts\Activate.ps1
+  ```
+* **macOS / Linux:**
+  ```bash
+  source venv/bin/activate
+  ```
+
+Install dependencies:
+```bash
 pip install -r requirements.txt
---------------------
-2. Launch Infrastructure
-Spin up Kafka, Zookeeper, and PostgreSQL in detached mode:
-docker compose up -d
---------------------------
-Verify all three containers are active:
-docker compose ps
---------------------------
-3. Run the Test Suite (TDD)
-Execute the unit tests validating validation logic and risk thresholds:
-pytest tests/ -v
---------------------------
-4. Run the Pipeline
-Open two terminal windows (with venv activated in both):
+```
 
-Terminal 1 (Consumer Worker):
+---
+
+### 2. Launch Infrastructure
+
+Spin up Kafka, Zookeeper, and PostgreSQL in detached mode:
+```bash
+docker compose up -d
+```
+
+Verify the containers are healthy:
+```bash
+docker compose ps
+```
+
+---
+
+### 3. Run Test Suite (TDD)
+
+Execute the test suite validating payload models and risk logic:
+```bash
+pytest tests/ -v
+```
+
+---
+
+### 4. Run the Pipeline
+
+Open two terminal windows (with `venv` activated in both):
+
+**Terminal 1 — Consumer Worker:**
+```bash
 python -m src.consumer
----------------------------
-Terminal 2 (Mock Payment Producer):
+```
+
+**Terminal 2 — Mock Payment Producer:**
+```bash
 python -m src.producer
-------------------------------
-Verifying PostgreSQL Data
-Inspect ingested transactions directly from the database container:
-docker compose exec postgres psql -U revolut_user -d transactions_db -c "SELECT transaction_id, user_id, amount, currency, status, processed_at FROM transactions ORDER BY processed_at DESC LIMIT 
-10;"
-----------------------
-Teardown
-To shut down containers and networks without losing database data:
+```
+
+---
+
+### 5. Inspect Persisted Ledger Data
+
+Query the PostgreSQL database directly:
+```bash
+docker compose exec postgres psql -U postgres -d transactions_db -c "SELECT transaction_id, amount, currency, status FROM transactions LIMIT 10;"
+```
+
+---
+
+### Teardown
+
+To shut down containers and networks without losing database volume data:
+```bash
 docker compose down
-------------------
+```
