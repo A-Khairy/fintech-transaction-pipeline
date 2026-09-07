@@ -1,15 +1,13 @@
 # Real-Time Financial Transaction Pipeline
 
-## Tech Stack
+[![Python](https://img.shields.io/badge/Python-3.12-blue?logo=python)](https://www.python.org/)
+[![Kafka](https://img.shields.io/badge/Apache_Kafka-7.5.0-black?logo=apachekafka)](https://kafka.apache.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)](https://www.docker.com/)
+[![Testing](https://img.shields.io/badge/Tests-Pytest-yellow?logo=pytest)](https://docs.pytest.org/)
 
-| Layer | Technologies |
-| :--- | :--- |
-| **Streaming & Messaging** | `Apache Kafka` `Zookeeper` |
-| **Data Ingestion & Orchestration** | `Apache Airflow (LocalExecutor)` |
-| **Storage & Database Engine** | `PostgreSQL 15` (ACID Transactions, Full Outer Joins) |
-| **Language & Frameworks** | `Python 3.12` `Pydantic v2` `Psycopg2` |
-| **Testing & Quality** | `Pytest` `Test-Driven Development (TDD)` |
-| **Infrastructure & DevOps** | `Docker` `Docker Compose` `Git` |
+An event-driven transaction ingestion microservice simulating real-time payment processing. Built with Python 3, Apache Kafka, and PostgreSQL, following Test-Driven Development (TDD) best practices.
+
 
 ---
 
